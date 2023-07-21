@@ -1,0 +1,32 @@
+---
+- name: Start chronyd or ntpd service and capture date output
+  hosts: all
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+    - name: Check OS version
+      command: cat /etc/redhat-release
+      register: os_version
+
+    - name: Start chronyd service on RHEL 8
+      service:
+        name: chronyd
+        state: restarted
+      when: "'Red Hat Enterprise Linux Server 8' in os_version.stdout"
+
+    - name: Start ntpd service on RHEL 7
+      service:
+        name: ntpd
+        state: restarted
+      when: "'Red Hat Enterprise Linux Server 7' in os_version.stdout"
+
+    - name: Get date command output
+      command: date
+      register: date_output
+
+    - name: Append date to file
+      lineinfile:
+        path: current_date.txt
+        line: "{{ inventory_hostname }},{{ date_output.stdout }}"
+      delegate_to: localhost
