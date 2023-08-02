@@ -1,0 +1,20 @@
+---
+- name: Get Memory Operation Mode
+  hosts: all
+  gather_facts: no
+  vars:
+    ansible_user: admssuri@emrsn.org
+    ansible_password: 
+
+  tasks:
+    - name: Run racadm command to get memory operation mode
+      raw: racadm get BIOS.MemSettings.MemOpMode
+      register: racadm_output
+
+
+    - name: Append racadm output to file
+      lineinfile:
+        path: /tmp/memory_mode.txt
+        line: "{{ inventory_hostname }}: {{ racadm_output.stdout }}"
+        create: yes
+      delegate_to: localhost
